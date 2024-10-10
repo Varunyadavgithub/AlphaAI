@@ -7,6 +7,8 @@ import mongoose from "mongoose";
 import Chat from "./models/chat.js";
 import UserChats from "./models/userChats.js";
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
+import dotenv from "dotenv";
+dotenv.config();
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -25,7 +27,7 @@ app.use(express.json());
 
 const connect = async () => {
   try {
-    await mongoose.connect(process.env.MONGO);
+    await mongoose.connect(process.env.DB_URI);
     console.log("Connected to MongoDB");
   } catch (err) {
     console.log(err);

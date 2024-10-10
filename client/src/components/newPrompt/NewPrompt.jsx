@@ -16,17 +16,22 @@ const NewPrompt = ({ data }) => {
     aiData: {},
   });
 
-  const chat = model.startChat({
-    history: [
-      data?.history.map(({ role, parts }) => ({
+  const history = data?.history?.length
+    ? data.history.map(({ role, parts }) => ({
         role,
-        parts: [{ text: parts[0].text }],
-      })),
-    ],
-    generationConfig: {
-      // maxOutputTokens: 100,
-    },
-  });
+        parts: [{ text: parts[0]?.text }],
+      }))
+    : [];
+
+  // Check if there's a valid history to start the chat
+  const chat = history.length
+    ? model.startChat({
+        history,
+        generationConfig: {
+          // maxOutputTokens: 100,
+        },
+      })
+    : null;
 
   const endRef = useRef(null);
   const formRef = useRef(null);
@@ -75,6 +80,8 @@ const NewPrompt = ({ data }) => {
   const add = async (text, isInitial) => {
     if (!isInitial) setQuestion(text);
 
+    if (!chat) return; // Don't proceed if chat is not initialized
+
     try {
       const result = await chat.sendMessageStream(
         Object.entries(img.aiData).length ? [img.aiData, text] : [text]
@@ -106,13 +113,11 @@ const NewPrompt = ({ data }) => {
   const hasRun = useRef(false);
 
   useEffect(() => {
-    if (!hasRun.current) {
-      if (data?.history?.length === 1) {
-        add(data.history[0].parts[0].text, true);
-      }
+    if (!hasRun.current && data?.history?.length === 1) {
+      add(data.history[0].parts[0].text, true);
     }
     hasRun.current = true;
-  }, []);
+  }, [data]);
 
   return (
     <>
